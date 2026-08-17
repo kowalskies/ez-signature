@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Email Signature Generator · Canareef</title>
+<style>
+  :root {
+    --brown: #876432;
+    --ink: #1c1917;
+    --muted: #6b6355;
+    --line: #e2ddd3;
+    --bg: #faf8f5;
+    --card: #ffffff;
+    --bad: #b42318;
+    --warn: #b54708;
+    --ok: #1a7f4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 80px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { padding: 44px 0 28px; }
+  h1 { margin: 0 0 6px; font-size: 27px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: var(--muted); }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px 24px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    margin: 0 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  input[type=text], input[type=email], input[type=url], select {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  input:focus, select:focus { outline: 2px solid var(--brown); outline-offset: -1px; border-color: var(--brown); }
+  input[aria-invalid=true] { border-color: var(--bad); }
+  .hint { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
+  .err { margin: 5px 0 0; font-size: 12px; color: var(--bad); min-height: 0; }
+  .err:empty { display: none; }
+  .err.soft { color: var(--warn); }
+  .check { display: flex; gap: 9px; align-items: flex-start; font-size: 14px; font-weight: 400; }
+  .check input { margin: 2px 0 0; flex: 0 0 auto; }
+  .radios { display: grid; gap: 10px; }
+  .radios label { font-weight: 400; display: flex; gap: 9px; align-items: center; margin: 0; font-size: 14px; }
+  #customBannerWrap { margin: 4px 0 0 26px; display: none; }
+  #customBannerWrap.on { display: block; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+  .toggle button {
+    border: 0; background: #fff; padding: 7px 13px; font: inherit; font-size: 13px;
+    color: var(--muted); cursor: pointer;
+  }
+  .toggle button[aria-pressed=true] { background: var(--brown); color: #fff; }
+  iframe#preview { width: 100%; height: 330px; border: 1px solid var(--line); border-radius: 8px; display: block; background: #fff; }
+  .budget { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
+  .budget b { color: var(--ok); font-variant-numeric: tabular-nums; }
+  .budget.warn b { color: var(--warn); }
+  .budget.over b { color: var(--bad); }
+  .buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+  button.act {
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    padding: 10px 15px; border-radius: 7px; font: inherit; font-size: 14px; cursor: pointer;
+  }
+  button.act:hover:not(:disabled) { border-color: var(--brown); }
+  button.act.primary { background: var(--brown); border-color: var(--brown); color: #fff; font-weight: 600; }
+  button.act:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.link {
+    border: 0; background: 0; padding: 0; font: inherit; font-size: 13px;
+    color: var(--muted); text-decoration: underline; cursor: pointer;
+  }
+  #status { margin: 14px 0 0; font-size: 13px; min-height: 19px; }
+  #status.ok { color: var(--ok); }
+  #status.bad { color: var(--bad); }
+  details { border-top: 1px solid var(--line); padding: 13px 0 3px; }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  details > div { padding: 10px 0 8px; color: var(--muted); font-size: 14px; }
+  details ol { margin: 0 0 10px; padding-left: 22px; }
+  details li { margin-bottom: 5px; }
+  .note { background: #fdf6e8; border-left: 3px solid var(--warn); padding: 9px 12px; border-radius: 0 6px 6px 0; margin: 10px 0 0; font-size: 13px; }
+  #mirror { position: absolute; left: -9999px; top: 0; width: 620px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Email signature generator</h1>
+  <p>Fill in four fields, pick your property, copy the signature into Outlook.</p>
+</header>
+
+<section>
+  <h2>Property</h2>
+  <label for="brand">Property</label>
+  <select id="brand"></select>
+  <p class="note" id="draftNote" hidden></p>
+</section>
+
+<section>
+  <h2>Your details</h2>
+  <div class="grid">
+    <div>
+      <label for="name">Full name</label>
+      <input type="text" id="name" autocomplete="name" placeholder="Jayani Kaushalya">
+      <p class="err" id="err-name"></p>
+    </div>
+    <div>
+      <label for="position">Position</label>
+      <input type="text" id="position" autocomplete="organization-title" placeholder="Junior Reservations Executive">
+      <p class="err" id="err-position"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Contact</h2>
+  <div class="grid">
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email" placeholder="jayani@canareef.com">
+      <p class="err" id="err-email"></p>
+    </div>
+    <div>
+      <label for="mobile">Mobile</label>
+      <input type="text" id="mobile" autocomplete="tel" placeholder="+94 778106532">
+      <p class="err" id="err-mobile"></p>
+    </div>
+    <div>
+      <label for="direct">Direct line <span style="font-weight:400;color:var(--muted)">optional</span></label>
+      <input type="text" id="direct" placeholder="+960 6896677">
+      <p class="hint">Leave blank to hide the T: line from the signature.</p>
+      <p class="err" id="err-direct"></p>
+    </div>
+    <div>
+      <label>Reservations email</label>
+      <label class="check"><input type="checkbox" id="showRes"> Show the reservations address next to mine</label>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Banner image</h2>
+  <div class="radios" id="bannerChoices"></div>
+  <div id="customBannerWrap">
+    <label for="customBanner">Image URL</label>
+    <input type="url" id="customBanner" placeholder="https://example.com/banner-v1.jpg">
+    <p class="hint">
+      Must be a public HTTPS URL, 850&nbsp;&times;&nbsp;150, served with no login. Use JPEG with a solid
+      background &mdash; transparent PNGs and WebPs disappear against dark backgrounds. SharePoint and
+      OneDrive links break for external recipients. There is no upload: an embedded image blows the 8&nbsp;KB
+      ceiling and is blocked in several Outlook paths.
+    </p>
+    <p class="err" id="err-customBanner"></p>
+  </div>
+</section>
+
+<section>
+  <div class="bar">
+    <h2 style="margin:0">Preview</h2>
+    <div class="toggle" role="group" aria-label="Preview background">
+      <button type="button" id="bgLight" aria-pressed="true">Light</button>
+      <button type="button" id="bgDark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+  <iframe id="preview" title="Signature preview"></iframe>
+  <p class="budget" id="budget"></p>
+</section>
+
+<section>
+  <h2>Outputs</h2>
+  <div class="buttons">
+    <button type="button" class="act primary" id="copyRich" disabled>Copy signature for Outlook</button>
+    <button type="button" class="act" id="downloadHtm" disabled>Download the .htm file</button>
+    <button type="button" class="act" id="copySource" disabled>Copy HTML source</button>
+    <button type="button" class="act" id="copyPlain" disabled>Copy the mobile version</button>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p class="hint">
+    The mobile version is plain text with no logo or banner. Outlook on iOS and Android has no HTML
+    signature field at all, so that is the most a phone can carry. It is not a bug.
+  </p>
+  <p style="margin:16px 0 0"><button type="button" class="link" id="reset">Reset to defaults</button></p>
+</section>
+
+<section>
+  <h2>Install instructions</h2>
+
+  <details>
+    <summary>I use classic Outlook on Windows</summary>
+    <div>
+      <ol>
+        <li>Click <b>Copy signature for Outlook</b> above.</li>
+        <li>In Outlook: <b>File &rsaquo; Options &rsaquo; Mail &rsaquo; Signatures</b>.</li>
+        <li><b>New</b>, name it, then paste into the editing box.</li>
+        <li>Set it as the default for new messages and for replies, then <b>OK</b>.</li>
+      </ol>
+      <p>If roaming signatures is on for your mailbox, it appears in Outlook on the web after you restart Outlook.</p>
+      <div class="note">
+        Pasting copies the images into Outlook's own local store. If the logo or banner is updated later,
+        your installed signature keeps the old one until you paste a fresh copy.
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>I use new Outlook on Windows</summary>
+    <div>
+      <ol>
+        <li>Click <b>Copy signature for Outlook</b>.</li>
+        <li><b>Settings</b> (gear) <b>&rsaquo; Accounts &rsaquo; Signatures</b>.</li>
+        <li>Paste, name it, assign it to new messages and replies, then <b>Save</b>.</li>
+      </ol>
+      <div class="note">
+        New Outlook does not inherit signatures from classic Outlook &mdash; the two store them separately.
+        If you use both, install in both.
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>I use Outlook in a browser or the PWA</summary>
+    <div>
+      <ol>
+        <li>Click <b>Copy signature for Outlook</b>.</li>
+        <li><b>Settings &rsaquo; Mail &rsaquo; Compose and reply</b>.</li>
+        <li>Paste into the signature box, tick both default checkboxes, then <b>Save</b>.</li>
+      </ol>
+      <div class="note">
+        Outlook on the web rejects signatures over roughly 8,000 characters with
+        &ldquo;the text you typed is too long&rdquo;. Watch the size line under the preview. If you hit it,
+        clear anything already in the box before pasting.
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>I use Outlook on Mac</summary>
+    <div>
+      <ol>
+        <li>Click <b>Copy signature for Outlook</b>.</li>
+        <li><b>Outlook &rsaquo; Settings &rsaquo; Signatures</b>, then <b>+</b>.</li>
+        <li>Paste, name it, close the window, then set it as default per account.</li>
+      </ol>
+      <p>Bahnschrift is a Windows font, so on Mac the signature renders in Arial. That is expected.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>I use Outlook on my phone</summary>
+    <div>
+      <ol>
+        <li>Click <b>Copy the mobile version</b>.</li>
+        <li>In the Outlook app: <b>profile icon &rsaquo; Settings &rsaquo; Signature</b>.</li>
+        <li>Clear what is there and paste.</li>
+      </ol>
+      <div class="note">
+        Logos and banners are not possible on mobile &mdash; the app has a plain-text field only. The mobile
+        signature also does not sync from desktop, so each phone needs this done once.
+      </div>
+    </div>
+  </details>
+</section>
+
+</div>
+<div id="mirror" aria-hidden="true"></div>
+
+<script>
+"use strict";
+
+/* ---------------------------------------------------------------------------
+   Asset base URL.
+
+   Every image in a signature must be an absolute, public HTTPS URL that stays
+   reachable for years -- these URLs are baked into every signature staff
+   install, so if they move, every installed signature breaks. Point this at a
+   domain you control before rollout. Defaults to wherever this page is served
+   from, which is right for a first deploy and wrong the day you change hosts.
+--------------------------------------------------------------------------- */
+const ASSET_BASE = new URL("assets/", location.href).href;
+const A = (f) => ASSET_BASE + f;
+
+/* Social icons are pre-rendered PNGs, one folder per colour, because Outlook
+   cannot recolour an image: no SVG, no CSS masks, no filters, no icon fonts.
+   So the icons track the font colour by resolving to the folder named after it.
+   Change a brand's colour and regenerate:  node tools/make-icons.mjs <hex>
+   Available: facebook instagram youtube linkedin x tiktok whatsapp pinterest tripadvisor */
+const ICON = (network, colour) =>
+  A("social/" + colour.replace(/^#/, "").toLowerCase() + "/" + network + "-v1.png");
+
+/* --- Brands --------------------------------------------------------------
+   Adding a property is this object plus two images. No code changes.
+------------------------------------------------------------------------- */
+const BRANDS = [{
+  id: "canareef",
+  name: "Canareef Resort Maldives",
+  emailDomain: "canareef.com",
+  brandColour: "#876432",
+  linkColour: "#876432",
+  fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
+  // Dimensions come from tools/make-logos.py, which prints the 1x numbers.
+  logo: { url: A("logo-canareef-v1.jpg"), w: 104, h: 66, alt: "Canareef Resort Maldives" },
+  // Asset is 850x150; displayed at 600 because 600px is the safe maximum width
+  // for email and the table above is 600. 850:150 scales to 600x106 exactly.
+  banners: [{ id: "panorama", label: "Canareef lagoon panorama", url: A("banner-canareef-v1.jpg"), w: 600, h: 106, alt: "" }],
+  website: { label: "www.canareef.com", href: "https://www.canareef.com" },
+  reservationsEmail: "reservations@canareef.com",
+  address: "19060, Addu Atoll, Maldives",
+  socials: [
+    { network: "facebook",  label: "Facebook",  href: "https://www.facebook.com/canareef" },
+    { network: "instagram", label: "Instagram", href: "https://www.instagram.com/canareef" },
+    { network: "youtube",   label: "YouTube",   href: "https://www.youtube.com/@canareef" },
+    { network: "tiktok",    label: "TikTok",    href: "https://www.tiktok.com/@canareef" },
+    { network: "linkedin",  label: "LinkedIn",  href: "https://www.linkedin.com/company/canareef" }
+  ],
+  disclaimer: "This e-mail, any attachments and the information contained therein are confidential and intended solely for the use of the addressee(s). If you have received this message in error, please send it back to the sender and delete it. Unauthorized publication, use, dissemination or disclosure of this message, either in whole or in part is strictly prohibited. Please consider the environment and do not print this email unless absolutely necessary."
+}, {
+  /* NOT READY FOR STAFF. Still needed:
+       - website, reservations address, disclaimer text
+       - social handles (the row is omitted until they exist -- dead social
+         links in a signature are worse than no icons)
+       - a banner export at 850x150, or leave the property banner-less
+     Everything else is wired: changing brandColour moves the text, the rule and
+     the social icons together, once the matching icon folder is generated. */
+  id: "palmscape",
+  name: "Palmscape Boutique Hotel",
+  draft: "Palmscape is not finished: the website, reservations address, disclaimer wording and social handles are still unconfirmed placeholders. The logo, brand green and address are correct. Preview it, but do not install it yet.",
+  emailDomain: "palmscape.com",
+  brandColour: "#2a5e50",
+  linkColour: "#2a5e50",
+  fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
+  // Taller than Canareef's, because the lockup stacks mark over wordmark. The
+  // master is a transparent PNG; make-logos.py flattens it onto solid white so
+  // dark-mode inversion cannot dissolve it.
+  logo: { url: A("logo-palmscape-v1.jpg"), w: 90, h: 97, alt: "Palmscape Boutique Hotel" },
+  banners: [],
+  website: { label: "www.palmscape.com", href: "https://www.palmscape.com" },
+  reservationsEmail: "reservations@palmscape.com",
+  address: "10106 Dhigga Magu, Hulhumale, Maldives",
+  socials: [],
+  disclaimer: "This e-mail, any attachments and the information contained therein are confidential and intended solely for the use of the addressee(s). If you have received this message in error, please send it back to the sender and delete it. Unauthorized publication, use, dissemination or disclosure of this message, either in whole or in part is strictly prohibited. Please consider the environment and do not print this email unless absolutely necessary."
+}];
+
+/* --- Escaping and normalising -------------------------------------------- */
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ESC_MAP[c]);
+const escAttr = esc; // same set; separate name so call sites read by intent
+
+// tel: hrefs need E.164 -- digits with at most one leading +. Anything else in
+// an href (spaces, brackets, a stray &) breaks the link silently.
+const sanitizePhone = (s) => {
+  const d = String(s || "").replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  return d.startsWith("+") ? d : (d ? "+" + d : "");
+};
+const stripProto = (u) => String(u || "").replace(/^https?:\/\//i, "").replace(/\/$/, "");
+const addProto = (u) => (/^https?:\/\//i.test(u) ? u : "https://" + u);
+
+/* --- Signature markup ---------------------------------------------------
+   Single source of truth. Table layout, inline styles only: no classes, no
+   <style>, no flexbox, no divs for layout, no margins. Word's rendering
+   engine ignores all of it.
+------------------------------------------------------------------------- */
+const T = {
+  name:       { fs: 14, lh: 20 },
+  meta:       { fs: 11, lh: 16 },
+  contact:    { fs: 11, lh: 17 },
+  disclaimer: { fs: 9,  lh: 12 }
+};
+
+function buildHtml(d, b) {
+  const C = b.brandColour, L = b.linkColour, FF = b.fontStack;
+
+  // mso-line-height-rule + px line-height: Word ignores unitless and % values.
+  // cellpadding="0" already zeroes td padding, so only explicit paddings appear.
+  const cell = (t, extra) =>
+    "mso-line-height-rule:exactly;font-family:" + FF +
+    ";font-size:" + t.fs + "px;line-height:" + t.lh + "px;color:" + C + ";" + (extra || "");
+  const NOWRAP = "white-space:nowrap;";
+
+  // Both the <a> and a nested <span> carry colour and text-decoration --
+  // without the span, Outlook and OWA restyle mailto:/tel: links to blue.
+  const link = (href, label) =>
+    '<a href="' + escAttr(href) + '" style="color:' + L + ';text-decoration:none;">' +
+    '<span style="color:' + L + ';text-decoration:none;">' + esc(label) + "</span></a>";
+
+  const row = (style, content) => '<tr><td style="' + style + '">' + content + "</td></tr>";
+
+  // 1px rule as a bgcolor td, not a border-bottom: Word drops thin borders.
+  const rule =
+    '<tr><td style="padding:6px 0 7px;font-size:0;line-height:0px;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">' +
+    '<tr><td height="1" bgcolor="' + C + '" style="height:1px;font-size:0;line-height:0px;background-color:' + C + ';">' +
+    "&nbsp;</td></tr></table></td></tr>";
+
+  const rows = [];
+  rows.push(row(cell(T.name, NOWRAP + "font-weight:bold;padding-bottom:4px;"), esc(d.name)));
+  rows.push(row(cell(T.meta, NOWRAP), esc(d.position)));
+  rows.push(row(cell(T.meta, NOWRAP), esc(b.name)));
+  rows.push(rule);
+
+  // E: line -- personal address, plus reservations when asked for.
+  const emails = [link("mailto:" + d.email, d.email)];
+  if (d.showRes && b.reservationsEmail) {
+    emails.push(link("mailto:" + b.reservationsEmail, b.reservationsEmail));
+  }
+  rows.push(row(cell(T.contact, NOWRAP),
+    '<span style="font-weight:bold;color:' + C + ';">E:</span> ' + emails.join(" &nbsp;")));
+
+  // T: and M: on one line. Optional rows are omitted, never rendered empty.
+  const phones = [];
+  if (d.direct) {
+    phones.push('<span style="font-weight:bold;color:' + C + ';">T:</span> ' +
+      link("tel:" + sanitizePhone(d.direct), d.direct));
+  }
+  phones.push('<span style="font-weight:bold;color:' + C + ';">M:</span> ' +
+    link("tel:" + sanitizePhone(d.mobile), d.mobile));
+  rows.push(row(cell(T.contact, NOWRAP), phones.join(" &nbsp;")));
+
+  rows.push(row(cell(T.contact, NOWRAP),
+    link(addProto(b.website.href), stripProto(b.website.label))));
+  rows.push(row(cell(T.contact, NOWRAP), esc(b.address)));
+
+  if (b.socials.length) {
+    const icons = b.socials.map((s, i) =>
+      (i ? '<td width="8" style="width:8px;font-size:1px;line-height:1px;">&nbsp;</td>' : "") +
+      '<td width="20" style="width:20px;font-size:0;line-height:0px;">' +
+      '<a href="' + escAttr(s.href) + '" style="text-decoration:none;">' +
+      '<img src="' + escAttr(ICON(s.network, C)) + '" width="20" height="20" alt="' + escAttr(s.label) +
+      '" border="0" style="display:block;border:0;width:20px;height:20px;"></a></td>'
+    ).join("");
+    rows.push(row("padding:9px 0 0;font-size:0;line-height:0px;",
+      '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">' +
+      "<tr>" + icons + "</tr></table>"));
+  }
+
+  const identity =
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">' +
+    rows.join("") + "</table>";
+
+  const COLS = 3;
+  const out = [];
+  // width as an attribute AND in the style: the two engines read different ones,
+  // and Word ignores max-width entirely.
+  out.push('<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;border-collapse:collapse;font-family:' +
+    FF + ';color:' + C + ';">');
+
+  // Column widths derive from the logo, so a wider lockup cannot overflow the
+  // 600px table or squeeze the text column into wrapping.
+  const GUTTER = 20;
+  const logoCol = b.logo.w + 14;
+  const textCol = 600 - logoCol - GUTTER;
+
+  out.push("<tr>" +
+    '<td width="' + logoCol + '" valign="middle" style="width:' + logoCol +
+    'px;padding:0;vertical-align:middle;font-size:0;line-height:0px;">' +
+    '<img src="' + escAttr(b.logo.url) + '" width="' + b.logo.w + '" height="' + b.logo.h +
+    '" alt="' + escAttr(b.logo.alt) + '" border="0" style="display:block;border:0;width:' +
+    b.logo.w + "px;height:" + b.logo.h + 'px;"></td>' +
+    '<td width="' + GUTTER + '" style="width:' + GUTTER + 'px;font-size:1px;line-height:1px;">&nbsp;</td>' +
+    '<td width="' + textCol + '" valign="middle" style="width:' + textCol +
+    'px;padding:0;vertical-align:middle;">' + identity + "</td></tr>");
+
+  const banner = resolveBanner(d, b);
+  if (banner) {
+    out.push('<tr><td colspan="' + COLS + '" style="padding:14px 0 0;font-size:0;line-height:0px;">' +
+      '<img src="' + escAttr(banner.url) + '" width="' + banner.w + '" height="' + banner.h +
+      '" alt="' + escAttr(banner.alt || "") + '" border="0" style="display:block;border:0;width:' +
+      banner.w + "px;height:" + banner.h + 'px;"></td></tr>');
+  }
+
+  out.push('<tr><td colspan="' + COLS + '" style="' +
+    cell(T.disclaimer, "padding:10px 0 0;") + '">' + esc(b.disclaimer) + "</td></tr>");
+
+  out.push("</table>");
+  return out.join("");
+}
+
+function resolveBanner(d, b) {
+  if (d.banner === "none") return null;
+  if (d.banner === "custom") {
+    return d.customBanner ? { url: d.customBanner, w: 600, h: 106, alt: "" } : null;
+  }
+  return b.banners.find((x) => x.id === d.banner) || null;
+}
+
+function buildPlainText(d, b) {
+  const emails = [d.email];
+  if (d.showRes && b.reservationsEmail) emails.push(b.reservationsEmail);
+  const phones = ["M: " + d.mobile];
+  if (d.direct) phones.push("T: " + d.direct);
+  return [
+    d.name,
+    d.position,
+    b.name,
+    phones.join(" | "),
+    emails.concat(stripProto(b.website.label)).join(" | ")
+  ].join("\n");
+}
+
+function buildHtmFile(html) {
+  return '<!doctype html>\n<html><head><meta charset="utf-8">' +
+    '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>\n<body>\n' +
+    html + "\n</body></html>\n";
+}
+
+/* --- Validation ---------------------------------------------------------- */
+const PLACEHOLDER = {
+  name: "Jayani Kaushalya",
+  position: "Junior Reservations Executive",
+  email: "jayani@canareef.com",
+  mobile: "+94 778106532",
+  direct: ""
+};
+
+const RULES = {
+  name: (v) => !v ? "Add your full name as it should appear to guests."
+    : !/^[\p{L} .'-]{2,40}$/u.test(v) ? "Use 2 to 40 letters, spaces, hyphens or apostrophes." : "",
+  position: (v) => !v ? "Add your position." : v.length < 2 || v.length > 45
+    ? "That title is longer than the signature can hold on one line." : "",
+  email: (v) => !v ? "Add your work email address."
+    : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "That is not a valid email address." : "",
+  mobile: (v) => !v ? "Add your mobile number."
+    : !/^[\d +()-]+$/.test(v) ? "Use digits, spaces, +, brackets and hyphens only."
+    : sanitizePhone(v).length < 8 ? "Include the country code, for example +960 or +94." : "",
+  direct: (v) => !v ? ""
+    : !/^[\d +()-]+$/.test(v) ? "Use digits, spaces, +, brackets and hyphens only."
+    : sanitizePhone(v).length < 8 ? "Include the country code, for example +960 or +94." : ""
+};
+
+/* --- Wiring -------------------------------------------------------------- */
+const $ = (id) => document.getElementById(id);
+const FIELDS = ["name", "position", "email", "mobile", "direct"];
+const OUTPUT_BUTTONS = ["copyRich", "downloadHtm", "copySource", "copyPlain"];
+
+let previewBg = "light";
+let current = { html: "", plain: "", htm: "", valid: false, brand: BRANDS[0] };
+
+$("brand").innerHTML = BRANDS.map((b) =>
+  '<option value="' + escAttr(b.id) + '">' + esc(b.name) + "</option>").join("");
+
+function brand() {
+  return BRANDS.find((b) => b.id === $("brand").value) || BRANDS[0];
+}
+
+function renderBannerChoices() {
+  const b = brand();
+  const opts = [{ id: "none", label: "None" }]
+    .concat(b.banners.map((x) => ({ id: x.id, label: x.label })))
+    .concat([{ id: "custom", label: "Custom URL" }]);
+  const chosen = $("bannerChoices").querySelector("input:checked");
+  const keep = chosen && opts.some((o) => o.id === chosen.value) ? chosen.value
+    : (b.banners[0] ? b.banners[0].id : "none");
+  $("bannerChoices").innerHTML = opts.map((o) =>
+    "<label><input type=radio name=banner value=" + escAttr(o.id) +
+    (o.id === keep ? " checked" : "") + "> " + esc(o.label) + "</label>").join("");
+  $("bannerChoices").querySelectorAll("input").forEach((el) => el.addEventListener("change", update));
+}
+
+function readForm() {
+  const d = { showRes: $("showRes").checked, customBanner: $("customBanner").value.trim() };
+  FIELDS.forEach((f) => { d[f] = $(f).value.trim(); });
+  const chosen = $("bannerChoices").querySelector("input:checked");
+  d.banner = chosen ? chosen.value : "none";
+  return d;
+}
+
+function validate(d) {
+  let ok = true;
+  FIELDS.forEach((f) => {
+    const msg = RULES[f](d[f]);
+    const box = $("err-" + f);
+    box.className = "err";
+    box.textContent = msg;
+    $(f).setAttribute("aria-invalid", msg ? "true" : "false");
+    if (msg && f !== "direct") ok = false;
+  });
+
+  // Domain mismatch is a warning, not a failure -- staff on a personal-domain
+  // mailbox still need a signature.
+  const b = brand();
+  if (!RULES.email(d.email) && b.emailDomain && !d.email.toLowerCase().endsWith("@" + b.emailDomain)) {
+    const box = $("err-email");
+    box.className = "err soft";
+    box.textContent = "That is not a @" + b.emailDomain + " address. It will be used as typed.";
+  }
+
+  const cb = $("err-customBanner");
+  cb.className = "err";
+  cb.textContent = "";
+  if (d.banner === "custom") {
+    if (!d.customBanner) { cb.textContent = "Paste the image URL, or choose None."; ok = false; }
+    else if (!/^https:\/\//i.test(d.customBanner)) {
+      cb.textContent = "Must start with https:// or images will be blocked."; ok = false;
+    }
+  }
+  return ok;
+}
+
+function renderPreview(html) {
+  const bg = previewBg === "dark" ? "#1f1f1f" : "#ffffff";
+  $("preview").srcdoc =
+    '<!doctype html><html><head><meta charset="utf-8"></head>' +
+    '<body style="margin:0;padding:20px;background:' + bg + ';">' + html + "</body></html>";
+}
+
+function renderBudget(html) {
+  const bytes = new Blob([html]).size;
+  const el = $("budget");
+  el.className = "budget" + (bytes > 8000 ? " over" : bytes > 7500 ? " warn" : "");
+  el.innerHTML = "<b>" + bytes.toLocaleString() + " characters</b> of HTML &middot; " +
+    (bytes > 8000 ? "over the 8,000 limit &mdash; Outlook on the web will reject this paste."
+      : bytes > 7500 ? "close to the 8,000 limit Outlook on the web enforces."
+      : "well inside the 8,000 limit Outlook on the web enforces.");
+}
+
+function update() {
+  const b = brand();
+  const d = readForm();
+  current.valid = validate(d);
+  current.brand = b;
+
+  $("customBannerWrap").classList.toggle("on", d.banner === "custom");
+  $("draftNote").hidden = !b.draft;
+  $("draftNote").textContent = b.draft || "";
+
+  // Empty state: preview the placeholder person so the layout is visible
+  // before anyone types. Copy buttons stay disabled until the real fields pass.
+  const shown = Object.assign({}, d);
+  FIELDS.forEach((f) => { if (!shown[f]) shown[f] = PLACEHOLDER[f]; });
+
+  current.html = buildHtml(shown, b);
+  current.plain = buildPlainText(shown, b);
+  current.htm = buildHtmFile(current.html);
+
+  renderPreview(current.html);
+  renderBudget(current.html);
+  $("mirror").innerHTML = current.html;
+
+  const blocked = !current.valid || new Blob([current.html]).size > 8000;
+  OUTPUT_BUTTONS.forEach((id) => { $(id).disabled = blocked; });
+  if (!current.valid) say("");
+}
+
+let timer;
+const debounced = () => { clearTimeout(timer); timer = setTimeout(update, 120); };
+
+FIELDS.concat(["customBanner"]).forEach((f) => $(f).addEventListener("input", debounced));
+$("showRes").addEventListener("change", update);
+$("brand").addEventListener("change", () => { renderBannerChoices(); update(); });
+
+$("bgLight").addEventListener("click", () => setBg("light"));
+$("bgDark").addEventListener("click", () => setBg("dark"));
+function setBg(v) {
+  previewBg = v;
+  $("bgLight").setAttribute("aria-pressed", String(v === "light"));
+  $("bgDark").setAttribute("aria-pressed", String(v === "dark"));
+  renderPreview(current.html);
+}
+
+$("reset").addEventListener("click", () => {
+  FIELDS.concat(["customBanner"]).forEach((f) => { $(f).value = ""; });
+  $("showRes").checked = false;
+  $("brand").value = BRANDS[0].id;
+  renderBannerChoices();
+  update();
+  say("Reset.", "ok");
+});
+
+/* --- Outputs ------------------------------------------------------------- */
+function say(msg, kind) {
+  const el = $("status");
+  el.textContent = msg;
+  el.className = kind || "";
+}
+
+// Rich copy writes both flavours. The text/plain flavour is the purpose-built
+// mobile string, not the preview's innerText -- that would drag the whole
+// disclaimer into a plain-text paste.
+$("copyRich").addEventListener("click", async () => {
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob([current.html], { type: "text/html" }),
+        "text/plain": new Blob([current.plain], { type: "text/plain" })
+      })]);
+      say("Signature copied. Paste it into your Outlook signature box.", "ok");
+      return;
+    }
+    throw new Error("no ClipboardItem");
+  } catch (e) {
+    // Fallback: select the rendered mirror node and use execCommand. The
+    // preview lives in an iframe, which a Range in this document cannot reach,
+    // so the mirror exists to be selectable. Both render the same string.
+    try {
+      const r = document.createRange();
+      r.selectNodeContents($("mirror"));
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      const done = document.execCommand("copy");
+      sel.removeAllRanges();
+      if (!done) throw new Error("execCommand refused");
+      say("Signature copied. Paste it into your Outlook signature box.", "ok");
+    } catch (e2) {
+      say("Your browser blocked the copy. Use Download the .htm file instead, open it, " +
+        "then select all and copy from there.", "bad");
+    }
+  }
+});
+
+$("copySource").addEventListener("click", () => writeText(current.html, "HTML source copied."));
+$("copyPlain").addEventListener("click", () => writeText(current.plain, "Mobile version copied. Paste it into Outlook on your phone."));
+
+async function writeText(text, ok) {
+  try {
+    await navigator.clipboard.writeText(text);
+    say(ok, "ok");
+  } catch (e) {
+    say("Your browser blocked the copy. Select the text manually instead.", "bad");
+  }
+}
+
+$("downloadHtm").addEventListener("click", () => {
+  const d = readForm();
+  const who = (d.name || PLACEHOLDER.name).replace(/[^\p{L}\d .'-]/gu, "").trim();
+  const url = URL.createObjectURL(new Blob([current.htm], { type: "text/html;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = current.brand.name.split(" ")[0] + " - " + who + ".htm";
+  a.click();
+  URL.revokeObjectURL(url);
+  say("Downloaded. Drop it into %APPDATA%\\Microsoft\\Signatures, or open it and copy from there.", "ok");
+});
+
+renderBannerChoices();
+update();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "ez-signature",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-brand Outlook email signature generator. No build step: index.html is the app.",
+  "scripts": {
+    "test": "node test.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1",
+    "simple-icons": "^16.28.0"
+  },
+  "license": "MIT"
+}
