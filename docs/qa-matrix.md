@@ -46,14 +46,19 @@ mailbox. Record date and the commit SHA of the build tested.
   logo. Check 10 is where this gets judged on real clients — if it reads as broken
   rather than soft, the fix is a reversed lockup on the brand colour (white glyphs
   measure 5.39 on the brown and 7.46 on the green, so they hold on any ground).
-- **The banner is still a placeholder.** `assets/banner-canareef-v1.jpg` is a
-  generated gradient. It needs an 850 x 150 export from the original panorama
-  before QA on the banner row means anything, and the banner row is the heaviest
-  and least battle-tested element in the layout.
+- **The banner is real** — the supplied 850 x 150 lagoon panorama, in place as
+  `assets/banner-canareef-v1.png`. It is still the heaviest and least
+  battle-tested element in the layout, with no prior art in any comparable tool,
+  so test it first rather than last.
+- **The banner is 218 KB, over the 120 KB budget.** PNG is lossless and cannot
+  compress a photograph: the same image is 37 KB as JPEG at quality 90, 53 KB at
+  95. Every recipient downloads this with every email. PNG was chosen
+  deliberately; if the weight becomes a complaint, re-save as JPEG and point the
+  brand's banner url at the .jpg — nothing else changes.
 - **The banner is not a true 2x asset.** 850 x 150 displayed at 600 x 106 is
   1.42x, so it will look slightly soft on retina screens where every other image
-  is sharp. A 1200 x 212 export would fix it at roughly double the file size.
-  Check row 2 of the matrix on a retina Mac before deciding it matters.
+  is sharp. A 1200 x 212 export would fix it. Check row 2 of the matrix on a
+  retina Mac before deciding it matters.
 - **Palmscape Boutique Hotel is a draft.** Logo, brand green `#2a5e50`, its icon
   set and the address are all confirmed. Still outstanding: website, reservations
   address, disclaimer text and social handles. The social row is deliberately omitted until real handles
