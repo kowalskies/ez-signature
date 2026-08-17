@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ez-signature
+    runtime: static
+    # No build step: index.html and assets/ are the app.
+    buildCommand: ""
+    staticPublishPath: .
+    headers:
+      # Assets are versioned and never overwritten, so they cache forever.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
