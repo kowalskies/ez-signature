@@ -23,18 +23,19 @@ mailbox. Record date and the commit SHA of the build tested.
 | 10 | Nothing broken in dark mode |
 | 11 | Under 8 KB when pasted into Outlook on the web |
 | 12 | Social icons render in the brand colour, not black or missing |
+| 13 | If a custom banner URL was used, the image loads for an external recipient |
 
 ## Results
 
-| Client | Date | Build | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Classic Outlook, Windows | | | | | | | | | | | | | | | |
-| New Outlook, Windows | | | | | | | | | | | | | | | |
-| Outlook on the web, Chrome | | | | | | | | | | | | | | | |
-| Outlook PWA | | | | | | | | | | | | | | | |
-| Outlook for Mac | | | | | | | | | | | | | | | |
-| Outlook iOS (plain text) | | | | | | | | | | | | | | | |
-| Outlook Android (plain text) | | | | | | | | | | | | | | | |
+| Client | Date | Build | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Classic Outlook, Windows | | | | | | | | | | | | | | | | |
+| New Outlook, Windows | | | | | | | | | | | | | | | | |
+| Outlook on the web, Chrome | | | | | | | | | | | | | | | | |
+| Outlook PWA | | | | | | | | | | | | | | | | |
+| Outlook for Mac | | | | | | | | | | | | | | | | |
+| Outlook iOS (plain text) | | | | | | | | | | | | | | | | |
+| Outlook Android (plain text) | | | | | | | | | | | | | | | | |
 
 ## Known open items
 
@@ -67,9 +68,10 @@ mailbox. Record date and the commit SHA of the build tested.
 - **Asset domain not final.** Asset URLs are baked into every installed
   signature. Until `ASSET_BASE` in `index.html` points at a permanent domain,
   every signature installed is one host change away from broken images.
-- **Dark mode.** Brown on an inverted dark background is low contrast, and the
-  9px disclaimer is the worst of it. The white-background logo mitigation works.
-  Full dark-mode parity is a v2 item.
+- **Dark mode.** Beyond the logos above, every text colour is a brand colour on an
+  inverted background, and the 9px disclaimer is the worst of it. Explicit `color`
+  on every text node means nothing is left to the client's default, which is as
+  far as v1 goes. Full dark-mode parity is a v2 item.
 - **Signature size is 6.3 KB**, not the PRD's 5 KB target. See the note in
   `test.mjs` for why the target is not reachable with the mandated inline rules.
   It is inside the 7.5 KB warn line and the 8 KB hard limit.

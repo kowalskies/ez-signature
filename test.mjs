@@ -2,13 +2,25 @@
    silently breaks if we get them wrong. Run: node test.mjs */
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { createServer } from "node:https";
+import { readFile, mkdtemp } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { extname, join } from "node:path";
+import { tmpdir } from "node:os";
+
+// Served over HTTPS with a throwaway self-signed cert, because the custom-banner
+// URL check requires https:// and the success path is worth testing for real.
+const certDir = await mkdtemp(join(tmpdir(), "ez-sig-cert-"));
+execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
+  "-subj", "/CN=127.0.0.1", "-addext", "subjectAltName=IP:127.0.0.1",
+  "-keyout", join(certDir, "k.pem"), "-out", join(certDir, "c.pem")], { stdio: "ignore" });
 
 const TYPES = { ".html": "text/html", ".jpg": "image/jpeg", ".png": "image/png" };
-const server = createServer(async (req, res) => {
-  const p = join(import.meta.dirname, req.url === "/" ? "index.html" : decodeURI(req.url));
+const server = createServer({
+  key: await readFile(join(certDir, "k.pem")),
+  cert: await readFile(join(certDir, "c.pem"))
+}, async (req, res) => {
+  const p = join(import.meta.dirname, req.url === "/" ? "index.html" : decodeURI(req.url.split("?")[0]));
   try {
     const body = await readFile(p);
     res.writeHead(200, { "content-type": TYPES[extname(p)] || "text/plain" });
@@ -18,10 +30,10 @@ const server = createServer(async (req, res) => {
   }
 });
 await new Promise((r) => server.listen(0, r));
-const base = `http://127.0.0.1:${server.address().port}/`;
+const base = `https://127.0.0.1:${server.address().port}/`;
 
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
-const page = await browser.newPage({ viewport: { width: 1100, height: 1400 } });
+const page = await browser.newPage({ viewport: { width: 1100, height: 1400 }, ignoreHTTPSErrors: true });
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.goto(base);
@@ -140,10 +152,35 @@ await page.check("#bannerChoices input[value=custom]");
 await page.fill("#customBanner", "http://insecure.example/b.jpg");
 await page.waitForTimeout(250);
 assert.ok(await page.isDisabled("#copyRich"), "http:// custom URL blocks the outputs");
-await page.fill("#customBanner", "https://cdn.example.com/promo-v1.jpg");
-await page.waitForTimeout(250);
-assert.ok((await html()).includes('src="https://cdn.example.com/promo-v1.jpg" width="600" height="106"'), "custom banner used at 600x106");
-assert.ok(await page.isEnabled("#copyRich"));
+assert.match(await page.textContent("#err-customBanner"), /https:\/\//);
+
+// A URL that cannot load is the failure that would otherwise reach recipients
+// as a broken image. Port 1 refuses instantly, so this needs no network.
+await page.fill("#customBanner", "https://127.0.0.1:1/promo-v1.jpg");
+await page.waitForFunction(() =>
+  /did not load as an image/.test(document.getElementById("err-customBanner").textContent), null, { timeout: 5000 });
+assert.ok(await page.isDisabled("#copyRich"), "an image URL that will not load blocks the outputs");
+
+// A share or gallery page gets a different message, because that is the mistake
+// people actually make when an image host hands them a viewer link.
+await page.fill("#customBanner", "https://127.0.0.1:1/i/9525/my-banner");
+await page.waitForFunction(() =>
+  /page, not an image file/.test(document.getElementById("err-customBanner").textContent), null, { timeout: 5000 });
+assert.ok(await page.isDisabled("#copyRich"), "a viewer page URL blocks the outputs");
+
+// A URL that really loads unlocks the outputs. Served by this test's own server.
+const goodBanner = base + "assets/banner-canareef-v1.png";
+await page.fill("#customBanner", goodBanner);
+await page.waitForFunction(() => !document.getElementById("copyRich").disabled, null, { timeout: 5000 });
+assert.equal(await page.textContent("#err-customBanner"), "", "a real 850x150 image raises no complaint");
+assert.ok((await html()).includes('src="' + goodBanner + '" width="600" height="106"'), "custom banner used at 600x106");
+
+// Right shape is not enforced, only warned about, since a squashed banner still sends.
+await page.fill("#customBanner", base + "assets/logo-canareef-v1.png");
+await page.waitForFunction(() =>
+  /not the 850×150 shape/.test(document.getElementById("err-customBanner").textContent), null, { timeout: 5000 });
+assert.ok(await page.isEnabled("#copyRich"), "wrong aspect ratio warns but does not block");
+
 await page.check("#bannerChoices input[value=panorama]");
 
 // --- Validation gates the outputs ---

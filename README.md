@@ -93,6 +93,30 @@ font colour. Regenerate after changing a colour.
 Available networks: facebook, instagram, youtube, linkedin, x, tiktok, whatsapp,
 pinterest, tripadvisor. Add more in `NETWORKS` in `tools/make-icons.mjs`.
 
+## Custom banners, and why there is no upload button
+
+The Banner image section offers None, the property's own banner, or a custom
+HTTPS URL. There is deliberately no upload button, and the reason is structural
+rather than effort: uploading needs a host, and for a browser on this page to
+learn where the file landed, the host's upload endpoint has to return
+`Access-Control-Allow-Origin`. Image hosts generally do not — imgbs.com, for
+example, accepts the POST and returns the URL in a response the browser is not
+allowed to read, with a random hash in the filename so it cannot be guessed
+either. So an in-page upload could send the file and never find out where it
+went. Hosting the image first and pasting the direct link is the only version
+that produces a working signature.
+
+What the page does instead is verify. A pasted URL gets loaded as an `<img>`,
+which is not subject to CORS, so the check is real: outputs stay locked until
+the URL demonstrably resolves to an image, and a wrong aspect ratio warns without
+blocking. This catches the mistake that matters — pasting a gallery or viewer
+page instead of the image file, which looks correct in the preview and arrives as
+a broken image for every recipient. Silence for ten seconds counts as failure, so
+a host that stalls cannot leave the check hanging.
+
+The in-app instructions under "I want to use my own banner image" carry the
+staff-facing version of this.
+
 ## Why the markup looks like 2003
 
 Outlook for Windows renders signatures with Word, which ignores flexbox, grid,

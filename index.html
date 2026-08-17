@@ -170,10 +170,12 @@
     <label for="customBanner">Image URL</label>
     <input type="url" id="customBanner" placeholder="https://example.com/banner-v1.jpg">
     <p class="hint">
-      Must be a public HTTPS URL, 850&nbsp;&times;&nbsp;150, served with no login. Use JPEG, not WebP,
-      which several Outlook versions will not render. SharePoint and OneDrive links break for external
-      recipients. There is no upload: an embedded image blows the 8&nbsp;KB ceiling and is blocked in
-      several Outlook paths.
+      Needs a <b>direct</b> link to the image file, ending in <code>.jpg</code> or <code>.png</code>
+      &mdash; not a share or gallery page. Host it somewhere public with no login, for example
+      <a href="https://imgbs.com/" target="_blank" rel="noopener">imgbs.com</a>, then open the uploaded
+      image on its own, right-click it, and copy the image address. SharePoint and OneDrive links break
+      for external recipients, and WebP will not render in several Outlook versions. Whatever you paste
+      gets loaded here to check it really is an image before the copy buttons unlock.
     </p>
     <p class="err" id="err-customBanner"></p>
   </div>
@@ -208,7 +210,7 @@
 </section>
 
 <section>
-  <h2>Install instructions</h2>
+  <h2>Install instructions and banner setup</h2>
 
   <details>
     <summary>I use classic Outlook on Windows</summary>
@@ -267,6 +269,39 @@
         <li>Paste, name it, close the window, then set it as default per account.</li>
       </ol>
       <p>Bahnschrift is a Windows font, so on Mac the signature renders in Arial. That is expected.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>I want to use my own banner image</summary>
+    <div>
+      <p>
+        There is no upload button here, and that is a limitation of image hosts rather than a missing
+        feature: a host has to permit cross-origin reads for this page to learn where your file landed,
+        and they generally do not. So the image gets hosted first, then linked.
+      </p>
+      <ol>
+        <li>Crop the image to <b>850 &times; 150</b>. Any other shape gets stretched to fit.</li>
+        <li>Save it as <b>JPEG</b> at quality 90 or so. Not WebP, which several Outlook versions refuse
+            to render. Keep it under 120&nbsp;KB &mdash; every recipient downloads it with every email.</li>
+        <li>Upload it to a public image host. <a href="https://imgbs.com/" target="_blank" rel="noopener">imgbs.com</a>
+            needs no account: choose <b>No auto-delete</b>, or your banner disappears and every signature
+            already installed loses its image.</li>
+        <li>Open the uploaded image on its own page, <b>right-click it and copy the image address</b>.
+            You need the link that ends in <code>.jpg</code> or <code>.png</code> &mdash; the link the
+            host shows you after uploading is usually a gallery page, not the file.</li>
+        <li>Back here, choose <b>Custom URL</b> under Banner image and paste it.</li>
+      </ol>
+      <p>
+        The page then loads that URL to confirm it really is an image, and the copy buttons stay locked
+        until it does. If it complains that the URL is a page rather than an image file, you copied the
+        gallery link instead of the image address &mdash; go back to step 4.
+      </p>
+      <div class="note">
+        Do not use SharePoint, OneDrive, Google Drive or Dropbox links. They work while you are signed in
+        and break for everyone outside the company, so the signature looks right to you and arrives with a
+        missing image for the guest.
+      </div>
     </div>
   </details>
 
@@ -556,6 +591,47 @@ const RULES = {
     : sanitizePhone(v).length < 8 ? "Include the country code, for example +960 or +94." : ""
 };
 
+/* --- Custom banner URL probe ---------------------------------------------
+   A pasted URL that is not a direct image link is the one mistake that looks
+   fine here and arrives broken for every recipient. An <img> load is not
+   subject to CORS, so the page can genuinely fetch the URL and find out.
+
+   This is also why there is no upload button. Uploading needs a host, and a
+   host's upload endpoint has to send Access-Control-Allow-Origin for a browser
+   to read the resulting URL back. Image hosts generally do not, so an in-page
+   upload can send the file and never learn where it landed. Host it yourself,
+   paste the direct link, and this checks it.
+------------------------------------------------------------------------- */
+const probes = new Map(); // url -> { state: 'loading' | 'ok' | 'fail', w, h }
+
+function probeImage(url) {
+  const hit = probes.get(url);
+  if (hit) return hit;
+
+  const rec = { state: "loading", w: 0, h: 0 };
+  probes.set(url, rec);
+
+  const settle = (state) => {
+    if (rec.state !== "loading") return;
+    rec.state = state;
+    update();
+  };
+
+  const img = new Image();
+  img.onload = () => {
+    rec.w = img.naturalWidth;
+    rec.h = img.naturalHeight;
+    settle("ok");
+  };
+  img.onerror = () => settle("fail");
+  // A host that accepts the connection and never answers fires neither event, so
+  // without this the check sits on "loading" and the outputs stay locked with no
+  // explanation. Ten seconds, then treat silence as failure.
+  setTimeout(() => settle("fail"), 10000);
+  img.src = url;
+  return rec;
+}
+
 /* --- Wiring -------------------------------------------------------------- */
 const $ = (id) => document.getElementById(id);
 const FIELDS = ["name", "position", "email", "mobile", "direct"];
@@ -617,9 +693,33 @@ function validate(d) {
   cb.className = "err";
   cb.textContent = "";
   if (d.banner === "custom") {
-    if (!d.customBanner) { cb.textContent = "Paste the image URL, or choose None."; ok = false; }
-    else if (!/^https:\/\//i.test(d.customBanner)) {
-      cb.textContent = "Must start with https:// or images will be blocked."; ok = false;
+    const url = d.customBanner;
+    if (!url) {
+      cb.textContent = "Paste the image URL, or choose None.";
+      ok = false;
+    } else if (!/^https:\/\//i.test(url)) {
+      cb.textContent = "Must start with https:// or images will be blocked.";
+      ok = false;
+    } else {
+      const p = probeImage(url);
+      if (p.state === "loading") {
+        cb.className = "err soft";
+        cb.textContent = "Checking that the URL loads as an image…";
+        ok = false;
+      } else if (p.state === "fail") {
+        // Almost always a share or viewer page rather than the file itself.
+        cb.textContent = /\.(jpe?g|png|gif)($|\?)/i.test(url)
+          ? "That URL did not load as an image. Check it is public and needs no login — "
+            + "or your own network may be blocking the host."
+          : "That is a page, not an image file. Open the image on its own, right-click it, "
+            + "copy the image address, and paste that — it should end in .jpg or .png.";
+        ok = false;
+      } else if (Math.abs(p.w / p.h - 850 / 150) > 0.15) {
+        // Wrong shape still works, it just gets squashed. Warn, do not block.
+        cb.className = "err soft";
+        cb.textContent = "That image is " + p.w + "×" + p.h + ", which is not the 850×150 shape. "
+          + "It will be stretched to fit. Crop it first if that looks wrong in the preview.";
+      }
     }
   }
   return ok;
