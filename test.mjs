@@ -143,6 +143,37 @@ assert.ok((await plain()).includes("jayani@canareef.com | reservations@canareef.
 assert.ok((await html()).includes("mailto:reservations@canareef.com"));
 await page.uncheck("#showRes");
 
+// --- Disclaimer toggle ---
+// On by default: a confidentiality notice is the norm, so the box has to be
+// unticked deliberately rather than remembered.
+assert.ok(await page.isChecked("#showDisclaimer"), "disclaimer included by default");
+assert.match(await page.textContent("#disclaimerHint"), /Included:.*445 characters/);
+
+await page.uncheck("#showDisclaimer");
+await page.waitForTimeout(200);
+const noDisc = await html();
+assert.ok(!noDisc.includes("confidential and intended solely"), "disclaimer row omitted when unticked");
+assert.ok(noDisc.includes("banner-canareef"), "the rest of the signature is untouched");
+assert.ok(Buffer.byteLength(noDisc) < bytes - 400, "dropping it actually shrinks the output");
+assert.ok(await page.isEnabled("#copyRich"), "no disclaimer is a valid signature, not an error");
+assert.match(await page.textContent("#disclaimerHint"), /Not included\..*445 characters back/);
+
+// Reset restores the default rather than the last state.
+await page.click("#reset");
+await page.waitForTimeout(250);
+assert.ok(await page.isChecked("#showDisclaimer"), "reset puts the disclaimer back on");
+
+await fill({
+  name: "Jayani Kaushalya",
+  position: "Junior Reservations Executive",
+  email: "jayani@canareef.com",
+  mobile: "+94 778106532",
+  direct: "+960 6896677"
+});
+await page.check("#bannerChoices input[value=panorama]");
+await page.waitForTimeout(200);
+assert.equal(await html(), h, "back to the same markup as the opening case");
+
 // --- Banner options ---
 await page.check("#bannerChoices input[value=none]");
 await page.waitForTimeout(200);

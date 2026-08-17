@@ -85,6 +85,11 @@ A brand may carry a `draft` string. While it does, the app shows a warning under
 the property selector saying what is unfinished, so nobody installs a
 half-configured signature. Delete the field when the property is ready.
 
+A brand's `disclaimer` is togglable per signature. It is on by default and
+`Reset to defaults` puts it back on, so leaving it out is always a deliberate
+choice rather than a remembered state. A brand with no `disclaimer` set simply
+never renders the row.
+
 Icons are pre-rendered PNGs, one folder per colour, because Outlook cannot
 recolour an image: no SVG, no CSS masks, no filters, no icon fonts. Setting a
 brand's `brandColour` points its icons at the matching folder, so they track the

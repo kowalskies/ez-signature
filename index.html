@@ -182,6 +182,15 @@
 </section>
 
 <section>
+  <h2>Disclaimer</h2>
+  <label class="check">
+    <input type="checkbox" id="showDisclaimer" checked>
+    Include the confidentiality notice at the bottom
+  </label>
+  <p class="hint" id="disclaimerHint"></p>
+</section>
+
+<section>
   <div class="bar">
     <h2 style="margin:0">Preview</h2>
     <div class="toggle" role="group" aria-label="Preview background">
@@ -529,8 +538,10 @@ function buildHtml(d, b) {
       banner.w + "px;height:" + banner.h + 'px;"></td></tr>');
   }
 
-  out.push('<tr><td colspan="' + COLS + '" style="' +
-    cell(T.disclaimer, "padding:10px 0 0;") + '">' + esc(b.disclaimer) + "</td></tr>");
+  if (d.showDisclaimer && b.disclaimer) {
+    out.push('<tr><td colspan="' + COLS + '" style="' +
+      cell(T.disclaimer, "padding:10px 0 0;") + '">' + esc(b.disclaimer) + "</td></tr>");
+  }
 
   out.push("</table>");
   return out.join("");
@@ -662,7 +673,11 @@ function renderBannerChoices() {
 }
 
 function readForm() {
-  const d = { showRes: $("showRes").checked, customBanner: $("customBanner").value.trim() };
+  const d = {
+    showRes: $("showRes").checked,
+    showDisclaimer: $("showDisclaimer").checked,
+    customBanner: $("customBanner").value.trim()
+  };
   FIELDS.forEach((f) => { d[f] = $(f).value.trim(); });
   const chosen = $("bannerChoices").querySelector("input:checked");
   d.banner = chosen ? chosen.value : "none";
@@ -752,6 +767,12 @@ function update() {
   $("draftNote").hidden = !b.draft;
   $("draftNote").textContent = b.draft || "";
 
+  $("disclaimerHint").textContent = !b.disclaimer
+    ? "This property has no disclaimer configured, so there is nothing to include."
+    : d.showDisclaimer
+      ? "Included: “" + b.disclaimer.slice(0, 72) + "…” — " + b.disclaimer.length + " characters."
+      : "Not included. That is " + b.disclaimer.length + " characters back against the 8,000 limit.";
+
   // Empty state: preview the placeholder person so the layout is visible
   // before anyone types. Copy buttons stay disabled until the real fields pass.
   const shown = Object.assign({}, d);
@@ -776,6 +797,7 @@ const debounced = () => { clearTimeout(timer); timer = setTimeout(update, 120); 
 
 FIELDS.concat(["customBanner"]).forEach((f) => $(f).addEventListener("input", debounced));
 $("showRes").addEventListener("change", update);
+$("showDisclaimer").addEventListener("change", update);
 $("brand").addEventListener("change", () => { renderBannerChoices(); update(); });
 
 $("bgLight").addEventListener("click", () => setBg("light"));
@@ -790,6 +812,7 @@ function setBg(v) {
 $("reset").addEventListener("click", () => {
   FIELDS.concat(["customBanner"]).forEach((f) => { $(f).value = ""; });
   $("showRes").checked = false;
+  $("showDisclaimer").checked = true;
   $("brand").value = BRANDS[0].id;
   renderBannerChoices();
   update();
