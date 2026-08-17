@@ -38,10 +38,13 @@ mailbox. Record date and the commit SHA of the build tested.
 
 ## Known open items
 
-- **Placeholder assets.** `assets/logo-canareef-v1.jpg` and
-  `assets/banner-canareef-v1.jpg` are generated placeholders. QA is not
-  meaningful until the real exports replace them, including the 1200 x 210
-  banner re-export from the original panorama.
+- **Logos are real.** Built from the masters in the repo root by
+  `tools/make-logos.py`, which trims the transparent margin, flattens onto solid
+  white and saves JPEG at 2x. Re-run it if a master changes.
+- **The banner is still a placeholder.** `assets/banner-canareef-v1.jpg` is a
+  generated gradient. It needs a 1200 x 210 export from the original panorama
+  before QA on the banner row means anything, and the banner row is the heaviest
+  and least battle-tested element in the layout.
 - **Palmscape Boutique Hotel is a draft.** Brand green `#2a5e50` is confirmed and
   its icon set is generated. Still outstanding: the real logo artwork (currently
   a placeholder lockup), website, address, reservations address, disclaimer text

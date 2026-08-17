@@ -11,6 +11,7 @@ index.html          the app: brand configs, signature builder, UI
 assets/             versioned images, never overwritten
   social/<hex>/     icon set, one folder per colour
 tools/make-icons.mjs regenerates the icon set in any colour
+tools/make-logos.py  master logo PNG -> signature-ready JPEG
 test.mjs            loads the page in Chromium, asserts the markup rules
 docs/qa-matrix.md   the real acceptance gate
 render.yaml         Render static site config
@@ -54,6 +55,18 @@ One object in `BRANDS` plus two images. No code changes.
 ```bash
 node tools/make-icons.mjs 876432 2a5e50   # icon set per brand colour
 ```
+
+Logo masters live in the repo root. Never point a signature at a transparent PNG
+— it dissolves against inverted dark-mode backgrounds. Run the master through:
+
+```bash
+pip install Pillow
+python3 tools/make-logos.py   # trims, flattens onto white, resizes to 2x, prints the 1x dimensions
+```
+
+Put the printed dimensions in the brand's `logo.w` / `logo.h`. Column widths in
+the signature derive from them, so a wider lockup shifts the text column instead
+of overflowing the 600px table.
 
 A brand may carry a `draft` string. While it does, the app shows a warning under
 the property selector saying what is unfinished, so nobody installs a

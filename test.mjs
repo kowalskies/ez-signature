@@ -184,7 +184,23 @@ assert.ok(!/#876432/.test(g), "no Canareef brown leaks into Palmscape");
 assert.equal((g.match(/#2a5e50/g) || []).length, (h.match(/#876432/g) || []).length,
   "every place the brown appeared is now green");
 assert.ok(g.includes('bgcolor="#2a5e50"'), "rule takes the brand colour");
-assert.ok(g.includes('logo-palmscape-v1.jpg" width="90" height="90"'), "square lockup at 90x90");
+assert.ok(g.includes('logo-palmscape-v1.jpg" width="90" height="97"'), "stacked lockup at its own aspect ratio");
+
+// Column widths follow the logo instead of a hardcoded 110, so the three
+// columns always sum to the 600px table width.
+for (const markup of [h, g]) {
+  const cols = await page.evaluate((m) => {
+    const el = document.createElement("div");
+    el.innerHTML = m;
+    return [...el.querySelector("table > tbody > tr").children].map((td) => ({
+      attr: Number(td.getAttribute("width")),
+      style: parseInt(td.style.width, 10)
+    }));
+  }, markup);
+  assert.equal(cols.length, 3, "three columns in the top row");
+  assert.equal(cols.reduce((a, c) => a + c.attr, 0), 600, `columns sum to 600, got ${JSON.stringify(cols)}`);
+  for (const c of cols) assert.equal(c.attr, c.style, "width attribute and style agree");
+}
 assert.equal((g.match(/<img/g) || []).length, 1, "logo only: no socials or banner configured yet");
 assert.ok(!(await page.locator("#draftNote").isHidden()), "draft warning shown for an unfinished property");
 assert.match(await page.textContent("#draftNote"), /do not install it yet/);
