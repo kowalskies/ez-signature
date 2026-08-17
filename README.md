@@ -52,8 +52,12 @@ wrong the day you change hosts.
 One object in `BRANDS` plus two images. No code changes.
 
 ```bash
-node tools/make-icons.mjs 876432 1a4f7a   # icon set per brand colour
+node tools/make-icons.mjs 876432 2a5e50   # icon set per brand colour
 ```
+
+A brand may carry a `draft` string. While it does, the app shows a warning under
+the property selector saying what is unfinished, so nobody installs a
+half-configured signature. Delete the field when the property is ready.
 
 Icons are pre-rendered PNGs, one folder per colour, because Outlook cannot
 recolour an image: no SVG, no CSS masks, no filters, no icon fonts. Setting a

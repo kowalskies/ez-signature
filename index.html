@@ -118,6 +118,7 @@
   <h2>Property</h2>
   <label for="brand">Property</label>
   <select id="brand"></select>
+  <p class="note" id="draftNote" hidden></p>
 </section>
 
 <section>
@@ -335,22 +336,32 @@ const BRANDS = [{
   ],
   disclaimer: "This e-mail, any attachments and the information contained therein are confidential and intended solely for the use of the addressee(s). If you have received this message in error, please send it back to the sender and delete it. Unauthorized publication, use, dissemination or disclosure of this message, either in whole or in part is strictly prohibited. Please consider the environment and do not print this email unless absolutely necessary."
 }, {
-  /* TODO: real values needed -- brand colour, logo, banner, website, address,
-     socials, disclaimer. Renders with Canareef geometry and neutral brown until
-     then, so the layout is testable but it is NOT ready to hand to staff. */
-  id: "property-b",
-  name: "Property B",
-  emailDomain: "example.com",
-  brandColour: "#876432",
-  linkColour: "#876432",
+  /* NOT READY FOR STAFF. Still needed:
+       - brandColour sampled from the real logo file (this is a visual read of it)
+       - the real logo artwork at 180x180, replacing the placeholder lockup
+       - website, address, reservations address, disclaimer text
+       - social handles (the row is omitted until they exist -- dead social
+         links in a signature are worse than no icons)
+       - a banner export at 1200x210, or leave the property banner-less
+     Everything else is wired: changing brandColour moves the text, the rule and
+     the social icons together, once the matching icon folder is generated. */
+  id: "palmscape",
+  name: "Palmscape Boutique Hotel",
+  draft: "Palmscape is not finished: the logo is a placeholder lockup, and the website, address, reservations address and social handles are unconfirmed. The brand green is correct. Preview it, but do not install it yet.",
+  emailDomain: "palmscape.com",
+  brandColour: "#2a5e50",
+  linkColour: "#2a5e50",
   fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
-  logo: { url: A("logo-canareef-v1.jpg"), w: 90, h: 62, alt: "Property B" },
+  // Square lockup, so 90x90 rather than Canareef's 90x62. Green on solid white,
+  // matching the supplied artwork -- solid, never transparent, so dark-mode
+  // inversion cannot dissolve it.
+  logo: { url: A("logo-palmscape-v1.jpg"), w: 90, h: 90, alt: "Palmscape Boutique Hotel" },
   banners: [],
-  website: { label: "www.example.com", href: "https://www.example.com" },
-  reservationsEmail: "reservations@example.com",
-  address: "Address line, Maldives",
+  website: { label: "www.palmscape.com", href: "https://www.palmscape.com" },
+  reservationsEmail: "reservations@palmscape.com",
+  address: "Address line to confirm",
   socials: [],
-  disclaimer: "Placeholder disclaimer. Replace before this property is used."
+  disclaimer: "This e-mail, any attachments and the information contained therein are confidential and intended solely for the use of the addressee(s). If you have received this message in error, please send it back to the sender and delete it. Unauthorized publication, use, dissemination or disclosure of this message, either in whole or in part is strictly prohibited. Please consider the environment and do not print this email unless absolutely necessary."
 }];
 
 /* --- Escaping and normalising -------------------------------------------- */
@@ -625,6 +636,8 @@ function update() {
   current.brand = b;
 
   $("customBannerWrap").classList.toggle("on", d.banner === "custom");
+  $("draftNote").hidden = !b.draft;
+  $("draftNote").textContent = b.draft || "";
 
   // Empty state: preview the placeholder person so the layout is visible
   // before anyone types. Copy buttons stay disabled until the real fields pass.

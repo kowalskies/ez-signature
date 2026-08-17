@@ -168,6 +168,49 @@ await page.waitForTimeout(250);
 assert.ok((await html()).includes("Jayani Kaushalya"), "placeholder preview when empty");
 assert.ok(await page.isDisabled("#copyRich"), "outputs disabled until the required fields pass");
 
+// --- Second brand: everything colour-driven moves together ---
+await fill({
+  name: "Jayani Kaushalya",
+  position: "Junior Reservations Executive",
+  email: "jayani@palmscape.com",
+  mobile: "+94 778106532",
+  direct: "+960 6896677" // same shape as the Canareef case, so the colour counts compare like for like
+});
+await page.selectOption("#brand", "palmscape");
+await page.waitForTimeout(250);
+const g = await html();
+assert.ok(g.includes("Palmscape Boutique Hotel"), "property name");
+assert.ok(!/#876432/.test(g), "no Canareef brown leaks into Palmscape");
+assert.equal((g.match(/#2a5e50/g) || []).length, (h.match(/#876432/g) || []).length,
+  "every place the brown appeared is now green");
+assert.ok(g.includes('bgcolor="#2a5e50"'), "rule takes the brand colour");
+assert.ok(g.includes('logo-palmscape-v1.jpg" width="90" height="90"'), "square lockup at 90x90");
+assert.equal((g.match(/<img/g) || []).length, 1, "logo only: no socials or banner configured yet");
+assert.ok(!(await page.locator("#draftNote").isHidden()), "draft warning shown for an unfinished property");
+assert.match(await page.textContent("#draftNote"), /do not install it yet/);
+
+// The green icon set exists and is the colour it claims, so the row renders
+// correctly the moment social handles are added to the config.
+const iconRes = await page.request.get(base + "assets/social/2a5e50/tiktok-v1.png");
+assert.equal(iconRes.status(), 200, "green tiktok icon is deployed");
+const px = await page.evaluate(async (src) => {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  const c = document.createElement("canvas");
+  c.width = img.width; c.height = img.height;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  const d = ctx.getImageData(0, 0, img.width, img.height).data;
+  for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) return [d[i], d[i + 1], d[i + 2]];
+  return null;
+}, base + "assets/social/2a5e50/tiktok-v1.png");
+assert.deepEqual(px, [42, 94, 80], "icon glyph is rendered in #2a5e50");
+
+await page.selectOption("#brand", "canareef");
+await page.waitForTimeout(250);
+assert.ok(await page.locator("#draftNote").isHidden(), "no draft warning on a finished property");
+
 assert.deepEqual(errors, [], "no page errors");
 
 // Screenshots for the record.

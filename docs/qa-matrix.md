@@ -42,8 +42,12 @@ mailbox. Record date and the commit SHA of the build tested.
   `assets/banner-canareef-v1.jpg` are generated placeholders. QA is not
   meaningful until the real exports replace them, including the 1200 x 210
   banner re-export from the original panorama.
-- **Property B is unconfigured.** It renders with Canareef geometry and a
-  placeholder disclaimer. Do not hand it to staff.
+- **Palmscape Boutique Hotel is a draft.** Brand green `#2a5e50` is confirmed and
+  its icon set is generated. Still outstanding: the real logo artwork (currently
+  a placeholder lockup), website, address, reservations address, disclaimer text
+  and social handles. The social row is deliberately omitted until real handles
+  exist. The app shows a warning banner while a property carries a `draft` note,
+  so nobody installs it by accident.
 - **Asset domain not final.** Asset URLs are baked into every installed
   signature. Until `ASSET_BASE` in `index.html` points at a permanent domain,
   every signature installed is one host change away from broken images.
