@@ -27,8 +27,12 @@ npm test           # needs: npm install
 
 ## Deploy
 
-Static folder, so anywhere. Both configs are committed:
+Static folder, so anywhere. All three need no build step:
 
+- **GitHub Pages** — repo Settings → Pages → Source **Deploy from a branch**,
+  branch `main`, folder `/ (root)`, Save. Live at
+  `https://kowalskies.github.io/ez-signature/` in a minute or two. `.nojekyll`
+  stops Jekyll from touching the files.
 - **Cloudflare Pages** — connect the repo, build command empty, output directory `/`.
 - **Render** — `render.yaml` is a static site with no build command.
 
@@ -56,13 +60,22 @@ One object in `BRANDS` plus two images. No code changes.
 node tools/make-icons.mjs 876432 2a5e50   # icon set per brand colour
 ```
 
-Logo masters live in the repo root. Never point a signature at a transparent PNG
-— it dissolves against inverted dark-mode backgrounds. Run the master through:
+Logo masters live in the repo root. Run one through the tool to get a
+signature-ready asset:
 
 ```bash
 pip install Pillow
-python3 tools/make-logos.py   # trims, flattens onto white, resizes to 2x, prints the 1x dimensions
+python3 tools/make-logos.py   # trims, resizes to 2x, prints the 1x dimensions
 ```
+
+Logos stay transparent. Outlook's dark mode inverts the message body background
+but not images, so a transparent logo keeps its colour and sits on whatever
+ground Outlook painted — it does not vanish. What it does lose is contrast:
+Canareef's brown lands around the 3:1 threshold for graphics on dark
+backgrounds and Palmscape's green falls below it, so both look softer there and
+Palmscape looks washed out. That is a deliberate trade against putting a white
+box behind every logo. The numbers, and the reversed-lockup fix, are in
+`tools/make-logos.py`.
 
 Put the printed dimensions in the brand's `logo.w` / `logo.h`. Column widths in
 the signature derive from them, so a wider lockup shifts the text column instead

@@ -170,10 +170,10 @@
     <label for="customBanner">Image URL</label>
     <input type="url" id="customBanner" placeholder="https://example.com/banner-v1.jpg">
     <p class="hint">
-      Must be a public HTTPS URL, 850&nbsp;&times;&nbsp;150, served with no login. Use JPEG with a solid
-      background &mdash; transparent PNGs and WebPs disappear against dark backgrounds. SharePoint and
-      OneDrive links break for external recipients. There is no upload: an embedded image blows the 8&nbsp;KB
-      ceiling and is blocked in several Outlook paths.
+      Must be a public HTTPS URL, 850&nbsp;&times;&nbsp;150, served with no login. Use JPEG, not WebP,
+      which several Outlook versions will not render. SharePoint and OneDrive links break for external
+      recipients. There is no upload: an embedded image blows the 8&nbsp;KB ceiling and is blocked in
+      several Outlook paths.
     </p>
     <p class="err" id="err-customBanner"></p>
   </div>
@@ -323,7 +323,7 @@ const BRANDS = [{
   linkColour: "#876432",
   fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
   // Dimensions come from tools/make-logos.py, which prints the 1x numbers.
-  logo: { url: A("logo-canareef-v1.jpg"), w: 104, h: 66, alt: "Canareef Resort Maldives" },
+  logo: { url: A("logo-canareef-v1.png"), w: 104, h: 66, alt: "Canareef Resort Maldives" },
   // Asset is 850x150; displayed at 600 because 600px is the safe maximum width
   // for email and the table above is 600. 850:150 scales to 600x106 exactly.
   banners: [{ id: "panorama", label: "Canareef lagoon panorama", url: A("banner-canareef-v1.jpg"), w: 600, h: 106, alt: "" }],
@@ -353,10 +353,12 @@ const BRANDS = [{
   brandColour: "#2a5e50",
   linkColour: "#2a5e50",
   fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
-  // Taller than Canareef's, because the lockup stacks mark over wordmark. The
-  // master is a transparent PNG; make-logos.py flattens it onto solid white so
-  // dark-mode inversion cannot dissolve it.
-  logo: { url: A("logo-palmscape-v1.jpg"), w: 90, h: 97, alt: "Palmscape Boutique Hotel" },
+  // Taller than Canareef's, because the lockup stacks mark over wordmark.
+  // Transparent, like Canareef's. This green measures 2.0-2.8:1 against dark
+  // backgrounds, below the 3:1 threshold for graphics, so it looks washed out in
+  // Outlook dark mode. Accepted trade -- see tools/make-logos.py for the numbers
+  // and the reversed-lockup fix if it becomes a complaint.
+  logo: { url: A("logo-palmscape-v1.png"), w: 90, h: 97, alt: "Palmscape Boutique Hotel" },
   banners: [],
   website: { label: "www.palmscape.com", href: "https://www.palmscape.com" },
   reservationsEmail: "reservations@palmscape.com",

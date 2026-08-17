@@ -38,9 +38,14 @@ mailbox. Record date and the commit SHA of the build tested.
 
 ## Known open items
 
-- **Logos are real.** Built from the masters in the repo root by
-  `tools/make-logos.py`, which trims the transparent margin, flattens onto solid
-  white and saves JPEG at 2x. Re-run it if a master changes.
+- **Logos are real, and transparent by decision.** Built from the masters in the
+  repo root by `tools/make-logos.py`. Measured against the 3:1 WCAG threshold for
+  graphics: Canareef brown is 3.23 on OWA dark, 2.81 on desktop dark, 3.90 on iOS
+  dark; Palmscape green is 2.33 / 2.03 / 2.82. So both soften on dark backgrounds
+  and Palmscape washes out. Accepted rather than putting a white box behind every
+  logo. Check 10 is where this gets judged on real clients — if it reads as broken
+  rather than soft, the fix is a reversed lockup on the brand colour (white glyphs
+  measure 5.39 on the brown and 7.46 on the green, so they hold on any ground).
 - **The banner is still a placeholder.** `assets/banner-canareef-v1.jpg` is a
   generated gradient. It needs an 850 x 150 export from the original panorama
   before QA on the banner row means anything, and the banner row is the heaviest

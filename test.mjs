@@ -184,7 +184,7 @@ assert.ok(!/#876432/.test(g), "no Canareef brown leaks into Palmscape");
 assert.equal((g.match(/#2a5e50/g) || []).length, (h.match(/#876432/g) || []).length,
   "every place the brown appeared is now green");
 assert.ok(g.includes('bgcolor="#2a5e50"'), "rule takes the brand colour");
-assert.ok(g.includes('logo-palmscape-v1.jpg" width="90" height="97"'), "stacked lockup at its own aspect ratio");
+assert.ok(g.includes('logo-palmscape-v1.png" width="90" height="97"'), "stacked lockup at its own aspect ratio");
 
 // Column widths follow the logo instead of a hardcoded 110, so the three
 // columns always sum to the 600px table width.
