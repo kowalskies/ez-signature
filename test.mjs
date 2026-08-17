@@ -174,6 +174,45 @@ await page.check("#bannerChoices input[value=panorama]");
 await page.waitForTimeout(200);
 assert.equal(await html(), h, "back to the same markup as the opening case");
 
+// --- Website toggle ---
+// On by default, and the label names the actual address rather than saying "website".
+assert.ok(await page.isChecked("#showWebsite"), "website included by default");
+assert.equal(await page.textContent("#websiteLabel"), "Show www.canareef.com");
+
+await page.uncheck("#showWebsite");
+await page.waitForTimeout(200);
+const noSite = await html();
+assert.ok(!noSite.includes("canareef.com\">"), "website link row omitted");
+assert.ok(!/>www\.canareef\.com</.test(noSite), "website text gone from the HTML");
+assert.ok(noSite.includes("19060, Addu Atoll"), "the address row below it survives");
+assert.ok(noSite.includes("mailto:jayani@canareef.com"), "the email link is untouched");
+// Three styled text links now instead of four: email, T:, M:.
+assert.equal((noSite.match(/<a [^>]*>(?!<img)<span[^>]*>/g) || []).length, 3, "one fewer text link");
+
+// The plain-text output has its own website line, so it needs the toggle too --
+// the easiest thing to forget, and it ships to every phone.
+assert.equal(await plain(), [
+  "Jayani Kaushalya",
+  "Junior Reservations Executive",
+  "Canareef Resort Maldives",
+  "M: +94 778106532 | T: +960 6896677",
+  "jayani@canareef.com"
+].join("\n"), "plain text drops the website too");
+
+await page.click("#reset");
+await page.waitForTimeout(250);
+assert.ok(await page.isChecked("#showWebsite"), "reset puts the website back on");
+await fill({
+  name: "Jayani Kaushalya",
+  position: "Junior Reservations Executive",
+  email: "jayani@canareef.com",
+  mobile: "+94 778106532",
+  direct: "+960 6896677"
+});
+await page.check("#bannerChoices input[value=panorama]");
+await page.waitForTimeout(200);
+assert.equal(await html(), h, "back to the same markup again");
+
 // --- Banner options ---
 await page.check("#bannerChoices input[value=none]");
 await page.waitForTimeout(200);

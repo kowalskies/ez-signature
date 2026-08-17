@@ -160,6 +160,12 @@
       <label>Reservations email</label>
       <label class="check"><input type="checkbox" id="showRes"> Show the reservations address next to mine</label>
     </div>
+    <div>
+      <label>Website</label>
+      <!-- One text node, not "Show" plus a span: .check is a flex row, so a
+           separate span would collect the 9px gap on top of the word space. -->
+      <label class="check"><input type="checkbox" id="showWebsite" checked> <span id="websiteLabel"></span></label>
+    </div>
   </div>
 </section>
 
@@ -486,8 +492,10 @@ function buildHtml(d, b) {
     link("tel:" + sanitizePhone(d.mobile), d.mobile));
   rows.push(row(cell(T.contact, NOWRAP), phones.join(" &nbsp;")));
 
-  rows.push(row(cell(T.contact, NOWRAP),
-    link(addProto(b.website.href), stripProto(b.website.label))));
+  if (d.showWebsite && b.website) {
+    rows.push(row(cell(T.contact, NOWRAP),
+      link(addProto(b.website.href), stripProto(b.website.label))));
+  }
   rows.push(row(cell(T.contact, NOWRAP), esc(b.address)));
 
   if (b.socials.length) {
@@ -560,12 +568,15 @@ function buildPlainText(d, b) {
   if (d.showRes && b.reservationsEmail) emails.push(b.reservationsEmail);
   const phones = ["M: " + d.mobile];
   if (d.direct) phones.push("T: " + d.direct);
+  const last = d.showWebsite && b.website
+    ? emails.concat(stripProto(b.website.label))
+    : emails;
   return [
     d.name,
     d.position,
     b.name,
     phones.join(" | "),
-    emails.concat(stripProto(b.website.label)).join(" | ")
+    last.join(" | ")
   ].join("\n");
 }
 
@@ -676,6 +687,7 @@ function readForm() {
   const d = {
     showRes: $("showRes").checked,
     showDisclaimer: $("showDisclaimer").checked,
+    showWebsite: $("showWebsite").checked,
     customBanner: $("customBanner").value.trim()
   };
   FIELDS.forEach((f) => { d[f] = $(f).value.trim(); });
@@ -767,6 +779,10 @@ function update() {
   $("draftNote").hidden = !b.draft;
   $("draftNote").textContent = b.draft || "";
 
+  $("websiteLabel").textContent = b.website
+    ? "Show " + stripProto(b.website.label)
+    : "Show the website";
+
   $("disclaimerHint").textContent = !b.disclaimer
     ? "This property has no disclaimer configured, so there is nothing to include."
     : d.showDisclaimer
@@ -798,6 +814,7 @@ const debounced = () => { clearTimeout(timer); timer = setTimeout(update, 120); 
 FIELDS.concat(["customBanner"]).forEach((f) => $(f).addEventListener("input", debounced));
 $("showRes").addEventListener("change", update);
 $("showDisclaimer").addEventListener("change", update);
+$("showWebsite").addEventListener("change", update);
 $("brand").addEventListener("change", () => { renderBannerChoices(); update(); });
 
 $("bgLight").addEventListener("click", () => setBg("light"));
@@ -813,6 +830,7 @@ $("reset").addEventListener("click", () => {
   FIELDS.concat(["customBanner"]).forEach((f) => { $(f).value = ""; });
   $("showRes").checked = false;
   $("showDisclaimer").checked = true;
+  $("showWebsite").checked = true;
   $("brand").value = BRANDS[0].id;
   renderBannerChoices();
   update();
