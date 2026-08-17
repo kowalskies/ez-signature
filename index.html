@@ -170,7 +170,7 @@
     <label for="customBanner">Image URL</label>
     <input type="url" id="customBanner" placeholder="https://example.com/banner-v1.jpg">
     <p class="hint">
-      Must be a public HTTPS URL, 1200&nbsp;&times;&nbsp;210, served with no login. Use JPEG with a solid
+      Must be a public HTTPS URL, 850&nbsp;&times;&nbsp;150, served with no login. Use JPEG with a solid
       background &mdash; transparent PNGs and WebPs disappear against dark backgrounds. SharePoint and
       OneDrive links break for external recipients. There is no upload: an embedded image blows the 8&nbsp;KB
       ceiling and is blocked in several Outlook paths.
@@ -324,7 +324,9 @@ const BRANDS = [{
   fontStack: "'Bahnschrift','DIN Alternate',Arial,Helvetica,sans-serif",
   // Dimensions come from tools/make-logos.py, which prints the 1x numbers.
   logo: { url: A("logo-canareef-v1.jpg"), w: 104, h: 66, alt: "Canareef Resort Maldives" },
-  banners: [{ id: "panorama", label: "Canareef lagoon panorama", url: A("banner-canareef-v1.jpg"), w: 600, h: 105, alt: "" }],
+  // Asset is 850x150; displayed at 600 because 600px is the safe maximum width
+  // for email and the table above is 600. 850:150 scales to 600x106 exactly.
+  banners: [{ id: "panorama", label: "Canareef lagoon panorama", url: A("banner-canareef-v1.jpg"), w: 600, h: 106, alt: "" }],
   website: { label: "www.canareef.com", href: "https://www.canareef.com" },
   reservationsEmail: "reservations@canareef.com",
   address: "19060, Addu Atoll, Maldives",
@@ -341,7 +343,7 @@ const BRANDS = [{
        - website, reservations address, disclaimer text
        - social handles (the row is omitted until they exist -- dead social
          links in a signature are worse than no icons)
-       - a banner export at 1200x210, or leave the property banner-less
+       - a banner export at 850x150, or leave the property banner-less
      Everything else is wired: changing brandColour moves the text, the rule and
      the social icons together, once the matching icon folder is generated. */
   id: "palmscape",
@@ -500,7 +502,7 @@ function buildHtml(d, b) {
 function resolveBanner(d, b) {
   if (d.banner === "none") return null;
   if (d.banner === "custom") {
-    return d.customBanner ? { url: d.customBanner, w: 600, h: 105, alt: "" } : null;
+    return d.customBanner ? { url: d.customBanner, w: 600, h: 106, alt: "" } : null;
   }
   return b.banners.find((x) => x.id === d.banner) || null;
 }

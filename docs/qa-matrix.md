@@ -42,13 +42,16 @@ mailbox. Record date and the commit SHA of the build tested.
   `tools/make-logos.py`, which trims the transparent margin, flattens onto solid
   white and saves JPEG at 2x. Re-run it if a master changes.
 - **The banner is still a placeholder.** `assets/banner-canareef-v1.jpg` is a
-  generated gradient. It needs a 1200 x 210 export from the original panorama
+  generated gradient. It needs an 850 x 150 export from the original panorama
   before QA on the banner row means anything, and the banner row is the heaviest
   and least battle-tested element in the layout.
-- **Palmscape Boutique Hotel is a draft.** Brand green `#2a5e50` is confirmed and
-  its icon set is generated. Still outstanding: the real logo artwork (currently
-  a placeholder lockup), website, address, reservations address, disclaimer text
-  and social handles. The social row is deliberately omitted until real handles
+- **The banner is not a true 2x asset.** 850 x 150 displayed at 600 x 106 is
+  1.42x, so it will look slightly soft on retina screens where every other image
+  is sharp. A 1200 x 212 export would fix it at roughly double the file size.
+  Check row 2 of the matrix on a retina Mac before deciding it matters.
+- **Palmscape Boutique Hotel is a draft.** Logo, brand green `#2a5e50`, its icon
+  set and the address are all confirmed. Still outstanding: website, reservations
+  address, disclaimer text and social handles. The social row is deliberately omitted until real handles
   exist. The app shows a warning banner while a property carries a `draft` note,
   so nobody installs it by accident.
 - **Asset domain not final.** Asset URLs are baked into every installed

@@ -87,7 +87,7 @@ assert.ok(h.includes('href="tel:+94778106532"'), "mobile normalised to E.164");
 assert.ok(h.includes('href="tel:+9606896677"'), "direct line normalised to E.164");
 
 // Banner: display:block kills the phantom gap under images.
-assert.match(h, /banner-canareef-v1\.jpg" width="600" height="105"[^>]*display:block/, "banner sized and display:block");
+assert.match(h, /banner-canareef-v1\.jpg" width="600" height="106"[^>]*display:block/, "banner sized and display:block");
 
 // 1px rule is a bgcolor td, not a border.
 assert.match(h, /<td height="1" bgcolor="#876432"[^>]*font-size:0;line-height:0/, "rule is a bgcolor td");
@@ -142,7 +142,7 @@ await page.waitForTimeout(250);
 assert.ok(await page.isDisabled("#copyRich"), "http:// custom URL blocks the outputs");
 await page.fill("#customBanner", "https://cdn.example.com/promo-v1.jpg");
 await page.waitForTimeout(250);
-assert.ok((await html()).includes('src="https://cdn.example.com/promo-v1.jpg" width="600" height="105"'), "custom banner used at 600x105");
+assert.ok((await html()).includes('src="https://cdn.example.com/promo-v1.jpg" width="600" height="106"'), "custom banner used at 600x106");
 assert.ok(await page.isEnabled("#copyRich"));
 await page.check("#bannerChoices input[value=panorama]");
 
