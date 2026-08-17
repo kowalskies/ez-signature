@@ -126,12 +126,12 @@
   <div class="grid">
     <div>
       <label for="name">Full name</label>
-      <input type="text" id="name" autocomplete="name" placeholder="Jayani Kaushalya">
+      <input type="text" id="name" autocomplete="name" placeholder="Full name">
       <p class="err" id="err-name"></p>
     </div>
     <div>
       <label for="position">Position</label>
-      <input type="text" id="position" autocomplete="organization-title" placeholder="Junior Reservations Executive">
+      <input type="text" id="position" autocomplete="organization-title" placeholder="Job title">
       <p class="err" id="err-position"></p>
     </div>
   </div>
@@ -142,17 +142,17 @@
   <div class="grid">
     <div>
       <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="email" placeholder="jayani@canareef.com">
+      <input type="email" id="email" autocomplete="email" placeholder="you@yourproperty.com">
       <p class="err" id="err-email"></p>
     </div>
     <div>
       <label for="mobile">Mobile</label>
-      <input type="text" id="mobile" autocomplete="tel" placeholder="+94 778106532">
+      <input type="text" id="mobile" autocomplete="tel" placeholder="+00 0000000">
       <p class="err" id="err-mobile"></p>
     </div>
     <div>
       <label for="direct">Direct line <span style="font-weight:400;color:var(--muted)">optional</span></label>
-      <input type="text" id="direct" placeholder="+960 6896677">
+      <input type="text" id="direct" placeholder="+00 0000000">
       <p class="hint">Leave blank to hide the T: line from the signature.</p>
       <p class="err" id="err-direct"></p>
     </div>
@@ -530,11 +530,14 @@ function buildHtmFile(html) {
 }
 
 /* --- Validation ---------------------------------------------------------- */
+// Shown in the preview before anyone types, so the layout is visible. Generic
+// on purpose: a real-looking name and number in the empty state gets mistaken
+// for a filled-in signature. `email` is completed from the property's domain.
 const PLACEHOLDER = {
-  name: "Jayani Kaushalya",
-  position: "Junior Reservations Executive",
-  email: "jayani@canareef.com",
-  mobile: "+94 778106532",
+  name: "Your Name",
+  position: "Your Job Title",
+  email: "",
+  mobile: "+000 0000000",
   direct: ""
 };
 
@@ -653,6 +656,7 @@ function update() {
   // before anyone types. Copy buttons stay disabled until the real fields pass.
   const shown = Object.assign({}, d);
   FIELDS.forEach((f) => { if (!shown[f]) shown[f] = PLACEHOLDER[f]; });
+  if (!shown.email) shown.email = "you@" + b.emailDomain;
 
   current.html = buildHtml(shown, b);
   current.plain = buildPlainText(shown, b);
@@ -748,7 +752,8 @@ async function writeText(text, ok) {
 
 $("downloadHtm").addEventListener("click", () => {
   const d = readForm();
-  const who = (d.name || PLACEHOLDER.name).replace(/[^\p{L}\d .'-]/gu, "").trim();
+  // The button is disabled until the name validates, so d.name is always set.
+  const who = d.name.replace(/[^\p{L}\d .'-]/gu, "").trim();
   const url = URL.createObjectURL(new Blob([current.htm], { type: "text/html;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;

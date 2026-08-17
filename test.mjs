@@ -165,7 +165,13 @@ await fill({ email: "jayani@canareef.com" });
 // --- Empty state previews the placeholder person, outputs stay disabled ---
 await page.click("#reset");
 await page.waitForTimeout(250);
-assert.ok((await html()).includes("Jayani Kaushalya"), "placeholder preview when empty");
+// Empty-state placeholders are generic, and carry no real staff name, real
+// number or hardcoded property domain that could be mistaken for filled-in data.
+const empty = await html();
+for (const generic of ["Your Name", "Your Job Title", "+000 0000000", "you@canareef.com"]) {
+  assert.ok(empty.includes(generic), `placeholder preview shows ${generic}`);
+}
+assert.ok(!/Jayani|Kaushalya|778106532|6896677/.test(empty), "no real names or numbers in the empty state");
 assert.ok(await page.isDisabled("#copyRich"), "outputs disabled until the required fields pass");
 
 // --- Second brand: everything colour-driven moves together ---
