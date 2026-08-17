@@ -7,6 +7,7 @@ property, and get a signature that installs correctly in every Outlook.
 runtime. Open the file or serve the folder.
 
 ```
+AGENTS.md           read this first if you are an agent (CLAUDE.md symlinks to it)
 index.html          the app: brand configs, signature builder, UI
 assets/             versioned images, never overwritten
   social/<hex>/     icon set, one folder per colour
